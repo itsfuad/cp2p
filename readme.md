@@ -1,8 +1,8 @@
-# Cpp2Py: Seamless C++ to Python Binding Generator
+# Cp2P: Seamless C++ to Python Binding Generator
 
-[![CI](https://github.com/istfuad/cpp2py/actions/workflows/ci.yml/badge.svg)](https://github.com/itsfuad/cpp2py/actions/workflows/ci.yml)
+[![CI](https://github.com/istfuad/Cp2P/actions/workflows/ci.yml/badge.svg)](https://github.com/itsfuad/Cp2P/actions/workflows/ci.yml)
 
-Cpp2Py is a powerful CLI tool that automatically generates Python bindings for C++ code. It supports multiple compilers and platforms, making it easy to create Python interfaces for your C++ libraries.
+Cp2P is a powerful CLI tool that automatically generates Python bindings for C++ code. It supports multiple compilers and platforms, making it easy to create Python interfaces for your C++ libraries.
 
 ## Features
 
@@ -18,15 +18,15 @@ Cpp2Py is a powerful CLI tool that automatically generates Python bindings for C
 ### From Source
 
 ```bash
-git clone https://github.com/itsfuad/cpp2py.git
-cd cpp2py
+git clone https://github.com/itsfuad/Cp2P.git
+cd Cp2P
 go build
 ```
 
 ### Using Go
 
 ```bash
-go install github.com/itsfuad/cpp2py@latest
+go install github.com/itsfuad/Cp2P@latest
 ```
 
 ## Quick Start
@@ -44,7 +44,7 @@ extern "C" {
 2. Generate Python bindings:
 
 ```bash
-cpp2py --input example.cpp --output ./bindings
+Cp2P --input example.cpp --output ./bindings
 ```
 
 3. Use in Python:
@@ -60,7 +60,7 @@ result = add(5, 3)  # Returns 8
 ### Basic Usage
 
 ```bash
-cpp2py --input <source_file> --output <output_dir> [options]
+Cp2P --input <source_file> --output <output_dir> [options]
 ```
 
 ### Options
@@ -100,8 +100,8 @@ cpp2py --input <source_file> --output <output_dir> [options]
 
 ```bash
 # Clone the repository
-git clone https://github.com/itsfuad/cpp2py.git
-cd cpp2py
+git clone https://github.com/itsfuad/Cp2P.git
+cd Cp2P
 
 # Install dependencies
 go mod download
@@ -119,9 +119,9 @@ golangci-lint run
 ### Project Structure
 
 ```
-cpp2py/
+Cp2P/
 ├── cmd/
-│   └── cpp2py.go           # CLI entry point
+│   └── Cp2P.go           # CLI entry point
 ├── compiler/
 │   ├── detect.go          # Compiler detection
 │   └── compile.go         # Compilation logic
