@@ -1,7 +1,3 @@
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from bindings.math import add, multiply, square_root, is_even
 
 def main():
@@ -23,4 +19,4 @@ def main():
     print(f"Is {number} even? {result}")
 
 if __name__ == "__main__":
-    main() 
+    main()
