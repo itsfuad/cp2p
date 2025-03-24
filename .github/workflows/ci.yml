@@ -2,63 +2,55 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "**" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "**" ]
 
 jobs:
-  test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        go-version: [1.21.x]
-        include:
-          - os: ubuntu-latest
-            compiler: gcc
-          - os: ubuntu-latest
-            compiler: clang
-          - os: macos-latest
-            compiler: clang
-
-    runs-on: ${{ matrix.os }}
-
+  build-and-test:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: ${{ matrix.go-version }}
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
 
-    - name: Install dependencies
-      run: go mod download
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        id: gomod-cache
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('go.mod') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
-    - name: Format Check
-      run: |
-        check_format() {
-            unformatted=$(go fmt ./...)
-            if [ -n "$unformatted" ]; then
-            echo "The following files are not formatted in $1:"
+      - name: Install Dependencies
+        run: go mod tidy
+
+      - name: Lint
+        run: |
+          go install golang.org/x/lint/golint@latest
+          golint ./...
+
+      - name: Format Check
+        run: |
+          unformatted=$(go fmt ./...)
+          if [ -n "$unformatted" ]; then
+            echo "The following files are not formatted:"
             echo "$unformatted"
-            return 1
-            fi
-            echo "Code is formatted in $1."
-            return 0
-        }
-        
-        cd compiler && check_format "compiler"
+            exit 1
+          else
+            echo "Code is formatted."
+          fi
 
-    - name: Run tests
-      env:
-        GOOS: ${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'darwin' || 'linux' }}
-        COMPILER: ${{ matrix.compiler }}
-      run: go test -v ./...
+      - name: Vet
+        run: go vet ./...
 
-    - name: Build
-      run: go build -v ./...
+      - name: Build
+        run: go build -v ./...
 
-    - name: Run linter
-      uses: golangci/golangci-lint-action@v4
-      with:
-        version: latest
-        args: --timeout=5m 
+      - name: Test
+        run: go test -v ./...
