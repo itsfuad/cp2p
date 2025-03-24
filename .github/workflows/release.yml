@@ -34,7 +34,7 @@ jobs:
           for platform in "${PLATFORMS[@]}"; do
             OS=${platform%/*}
             ARCH=${platform#*/}
-            output_name="releases/tinyass-${OS}-${ARCH}"
+            output_name="releases/cp2p-${OS}-${ARCH}"
             if [ $OS = "windows" ]; then
               output_name="$output_name.exe"
             fi
