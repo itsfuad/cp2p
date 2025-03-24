@@ -35,13 +35,20 @@ jobs:
     - name: Install dependencies
       run: go mod download
 
-    - name: Check code formatting
+    - name: Format Check
       run: |
-        if [ "$(gofmt -l . | wc -l)" -gt 0 ]; then
-            echo "Code is not properly formatted. Please run 'gofmt -w .'"
-            gofmt -l .
-            exit 1
-        fi
+        check_format() {
+            unformatted=$(go fmt ./...)
+            if [ -n "$unformatted" ]; then
+            echo "The following files are not formatted in $1:"
+            echo "$unformatted"
+            return 1
+            fi
+            echo "Code is formatted in $1."
+            return 0
+        }
+        
+        cd compiler && check_format "compiler"
 
     - name: Run tests
       env:
