@@ -1,8 +1,6 @@
 # Cpp2Py: Seamless C++ to Python Binding Generator
 
-[![CI](https://github.com/yourusername/cpp2py/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/cpp2py/actions/workflows/ci.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/yourusername/cpp2py)](https://goreportcard.com/report/github.com/yourusername/cpp2py)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/istfuad/cpp2py/actions/workflows/ci.yml/badge.svg)](https://github.com/itsfuad/cpp2py/actions/workflows/ci.yml)
 
 Cpp2Py is a powerful CLI tool that automatically generates Python bindings for C++ code. It supports multiple compilers and platforms, making it easy to create Python interfaces for your C++ libraries.
 
@@ -20,7 +18,7 @@ Cpp2Py is a powerful CLI tool that automatically generates Python bindings for C
 ### From Source
 
 ```bash
-git clone https://github.com/yourusername/cpp2py.git
+git clone https://github.com/itsfuad/cpp2py.git
 cd cpp2py
 go build
 ```
@@ -28,7 +26,7 @@ go build
 ### Using Go
 
 ```bash
-go install github.com/yourusername/cpp2py@latest
+go install github.com/itsfuad/cpp2py@latest
 ```
 
 ## Quick Start
@@ -102,7 +100,7 @@ cpp2py --input <source_file> --output <output_dir> [options]
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/cpp2py.git
+git clone https://github.com/itsfuad/cpp2py.git
 cd cpp2py
 
 # Install dependencies
