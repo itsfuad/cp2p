@@ -1,7 +1,5 @@
 # Cp2P: Seamless C++ to Python Binding Generator
 
-[![CI](https://github.com/istfuad/Cp2P/actions/workflows/ci.yml/badge.svg)](https://github.com/itsfuad/Cp2P/actions/workflows/ci.yml)
-
 Cp2P is a powerful CLI tool that automatically generates Python bindings for C++ code. It supports multiple compilers and platforms, making it easy to create Python interfaces for your C++ libraries.
 
 ## Features
