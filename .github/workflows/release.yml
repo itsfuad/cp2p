@@ -1,12 +1,16 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches:
+      - stable
 
 jobs:
   release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -30,7 +34,7 @@ jobs:
           for platform in "${PLATFORMS[@]}"; do
             OS=${platform%/*}
             ARCH=${platform#*/}
-            output_name="releases/cp2p-${OS}-${ARCH}"
+            output_name="releases/tinyass-${OS}-${ARCH}"
             if [ $OS = "windows" ]; then
               output_name="$output_name.exe"
             fi
