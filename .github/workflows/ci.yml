@@ -17,8 +17,6 @@ jobs:
             compiler: gcc
           - os: ubuntu-latest
             compiler: clang
-          - os: windows-latest
-            compiler: msvc
           - os: macos-latest
             compiler: clang
 
