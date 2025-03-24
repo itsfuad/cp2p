@@ -25,6 +25,14 @@ type CompilerInfo struct {
 	Version      string
 	Path         string
 	IncludePaths []string
+	EnvSetup     *CompilerEnvSetup
+}
+
+// CompilerEnvSetup contains information about how to set up the compiler's environment
+type CompilerEnvSetup struct {
+	SetupScript string   // Path to environment setup script (e.g., vcvarsall.bat for MSVC)
+	SetupArgs   []string // Arguments for the setup script
+	SetupCmd    string   // Command to run the setup script (e.g., "cmd /c" for MSVC)
 }
 
 // DetectCompiler determines the appropriate compiler based on the OS and user preference
@@ -166,7 +174,6 @@ func checkMSVC() (*CompilerInfo, error) {
 	}
 
 	// Find Visual Studio path by looking for cl.exe's parent directory
-	// cl.exe is typically in: <VS_PATH>\VC\Tools\MSVC\<version>\bin\Hostx64\x64\cl.exe
 	vsPath := ""
 	dir := filepath.Dir(path)
 	for {
@@ -181,12 +188,23 @@ func checkMSVC() (*CompilerInfo, error) {
 	}
 
 	includePaths := []string{}
+	var envSetup *CompilerEnvSetup
 	if vsPath != "" {
 		if msvcPath := findMSVCIncludePath(vsPath); msvcPath != "" {
 			includePaths = append(includePaths, msvcPath)
 		}
 		if sdkPath := findSDKIncludePath(); sdkPath != "" {
 			includePaths = append(includePaths, sdkPath)
+		}
+
+		// Set up MSVC environment configuration
+		vcvarsall := filepath.Join(vsPath, "VC\\Auxiliary\\Build\\vcvarsall.bat")
+		if _, err := os.Stat(vcvarsall); err == nil {
+			envSetup = &CompilerEnvSetup{
+				SetupScript: vcvarsall,
+				SetupArgs:   []string{"x64"},
+				SetupCmd:    "cmd /c",
+			}
 		}
 	}
 
@@ -195,5 +213,6 @@ func checkMSVC() (*CompilerInfo, error) {
 		Version:      string(output),
 		Path:         path,
 		IncludePaths: includePaths,
+		EnvSetup:     envSetup,
 	}, nil
 }

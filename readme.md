@@ -1,208 +1,161 @@
 # Cpp2Py: Seamless C++ to Python Binding Generator
 
----
+[![CI](https://github.com/yourusername/cpp2py/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/cpp2py/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/yourusername/cpp2py)](https://goreportcard.com/report/github.com/yourusername/cpp2py)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Overview
+Cpp2Py is a powerful CLI tool that automatically generates Python bindings for C++ code. It supports multiple compilers and platforms, making it easy to create Python interfaces for your C++ libraries.
 
-Cpp2Py is a cross-platform CLI tool designed to:
+## Features
 
-- Compile C++ projects into shared libraries (DLL/SO/Dylib).
-- Automatically generate Python bindings that feel native, with:
-  - **Natural Imports**: Use functions as if they were pure Python.
-  - **Intellisense Support**: Benefit from type hints and docstrings.
-  - **No Manual Setup**: Ready-to-use bindings without additional configuration.
+- **Multi-Compiler Support**: Works with GCC, Clang, and MSVC
+- **Cross-Platform**: Supports Windows, Linux, and macOS
+- **Type-Safe**: Generates proper type hints and docstrings
+- **Easy to Use**: Simple command-line interface
+- **Configurable**: Supports JSON/YAML configuration files
+- **Modern Python**: Generates Python 3.7+ compatible code
 
----
+## Installation
 
-## Key Features
+### From Source
 
-- **Multi-Compiler Support**: Compatible with GCC, Clang, and MSVC.
-- **Cross-Platform Compatibility**: Supports Windows, Linux, and macOS.
-- **Pythonic API**: Generated bindings are intuitive and integrate seamlessly with Python codebases.
-- **Enhanced Developer Experience**: Auto-generated type hints and docstrings ensure full support for code editors and IDEs.
+```bash
+git clone https://github.com/yourusername/cpp2py.git
+cd cpp2py
+go build
+```
 
----
+### Using Go
 
-## Project Structure
+```bash
+go install github.com/yourusername/cpp2py@latest
+```
+
+## Quick Start
+
+1. Create a C++ source file (`example.cpp`):
+
+```cpp
+extern "C" {
+    int add(int a, int b) {
+        return a + b;
+    }
+}
+```
+
+2. Generate Python bindings:
+
+```bash
+cpp2py --input example.cpp --output ./bindings
+```
+
+3. Use in Python:
+
+```python
+from bindings.example import add
+
+result = add(5, 3)  # Returns 8
+```
+
+## Usage
+
+### Basic Usage
+
+```bash
+cpp2py --input <source_file> --output <output_dir> [options]
+```
+
+### Options
+
+- `--input`: Path to C++ source file (required)
+- `--output`: Output directory (default: ./bindings)
+- `--compiler`: Compiler choice (gcc, clang, msvc, auto)
+- `--config`: JSON/YAML config file for custom bindings
+
+### Configuration File Example
+
+```json
+{
+    "functions": [
+        {
+            "name": "add",
+            "return_type": "int",
+            "parameters": [
+                {"name": "a", "type": "int"},
+                {"name": "b", "type": "int"}
+            ],
+            "docstring": "Adds two integers"
+        }
+    ]
+}
+```
+
+## Development
+
+### Prerequisites
+
+- Go 1.21 or later
+- C++ compiler (GCC, Clang, or MSVC)
+- Python 3.7 or later
+
+### Building
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/cpp2py.git
+cd cpp2py
+
+# Install dependencies
+go mod download
+
+# Build
+go build
+
+# Run tests
+go test ./...
+
+# Run linter
+golangci-lint run
+```
+
+### Project Structure
 
 ```
 cpp2py/
 ├── cmd/
 │   └── cpp2py.go           # CLI entry point
 ├── compiler/
-│   ├── detect.go           # Compiler detection
-│   └── compile.go          # Cross-platform compilation logic
+│   ├── detect.go          # Compiler detection
+│   └── compile.go         # Compilation logic
 ├── binding/
-│   └── generator.go        # Python binding generator with type hints and docstrings
+│   └── generator.go       # Python binding generator
 ├── config/
-│   └── parser.go           # Config file parser (JSON/YAML)
+│   └── parser.go          # Config file parser
 ├── util/
-│   ├── os_utils.go         # OS & path utilities
-│   └── logger.go           # Logging & error handling
+│   ├── os_utils.go        # OS utilities
+│   └── logger.go          # Logging
+├── tests/                 # Test files
+├── .github/              # GitHub Actions
 ├── README.md
 ├── go.mod
 └── LICENSE
 ```
 
----
+## Contributing
 
-## How It Works
-
-### 1. Command Usage
-
-```
-cpp2py --input mylib.cpp --output ./bindings --compiler auto --config bindings.json
-```
-
-Arguments:
-
-- `--input`: Path to the C++ source file or project entry point.
-- `--output`: Output directory (default: `./bindings`).
-- `--compiler`: Compiler choice (`gcc`, `clang`, `msvc`, `auto`).
-- `--config`: (Optional) JSON/YAML config specifying functions to export.
-
----
-
-### 2. Process Flow
-
-1. **Compiler Detection**: Determines the available compiler based on the OS and `--compiler` flag.
-2. **OS Detection**: Identifies the operating system to tailor the compilation process.
-3. **Compilation**: Generates platform-specific shared libraries:
-   - Windows: `.dll`
-   - Linux: `.so`
-   - macOS: `.dylib`
-4. **Function Signature Handling**: Extracts function signatures and descriptions from:
-   - Config files.
-   - Annotated comments in C++ code:
-
-```cpp
-// EXPORT: int add(int a, int b) -> "Adds two integers."
-```
-
-5. **Python Binding Generation**: Produces a Python module with:
-   - Natural function imports.
-   - Type hints and docstrings for each function.
-   - Encapsulated `ctypes` logic to maintain a clean API.
-6. **Output Structure**:
-
-```
-/bindings/
-├── libmylib.so     # Linux
-├── libmylib.dylib  # macOS
-├── mylib.dll       # Windows
-└── mylib.py        # Python binding script
-```
-
-7. **Python Usage**: Developers can immediately utilize the bindings:
-
-```python
-from bindings.mylib import add
-
-result = add(5, 7)
-```
-
----
-
-## Generated Python Binding Example
-
-```python
-import ctypes
-import sys
-import os
-from typing import Any
-
-# Load the shared library based on the OS
-if sys.platform.startswith('win'):
-    _lib = ctypes.CDLL(os.path.join(os.path.dirname(__file__), 'mylib.dll'))
-elif sys.platform.startswith('linux'):
-    _lib = ctypes.CDLL(os.path.join(os.path.dirname(__file__), 'libmylib.so'))
-elif sys.platform.startswith('darwin'):
-    _lib = ctypes.CDLL(os.path.join(os.path.dirname(__file__), 'libmylib.dylib'))
-
-# Define the argument and return types for the C function
-_lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
-_lib.add.restype = ctypes.c_int
-
-def add(a: int, b: int) -> int:
-    """
-    Adds two integers.
-
-    Args:
-        a (int): First integer.
-        b (int): Second integer.
-
-    Returns:
-        int: Sum of a and b.
-    """
-    return _lib.add(a, b)
-
-__all__ = ['add']
-```
-
----
-
-## Benefits of This Approach
-
-- **Pythonic Interface**: Users interact with functions as if they were native Python, without dealing with `ctypes` directly.
-- **Enhanced Developer Experience**: Type hints and docstrings provide clarity and support for code editors, facilitating features like autocomplete and inline documentation.
-- **Encapsulation**: The underlying `ctypes` implementation is hidden, offering a clean and intuitive API.
-
----
-
-## Optional Features (Planned)
-
-- **CMake Project Support**: Automatically detect and build CMake projects.
-- **Signature Auto-Parsing**: Scan `.cpp` files for annotated comments to extract function signatures.
-- **GUI Frontend**: Develop a user-friendly interface using Go’s Fyne library.
-- **Virtualenv & Packaging**: Option to create Python packages for distribution.
-- **Parallel Compilation**: Enhance performance for large C++ projects.
-
----
-
-## Dependencies
-
-- **Go Standard Library**: The core functionality is built using Go's standard packages.
-- Optional: Utilize `cobra` for advanced CLI features.
-
----
-
-## Project Timeline
-
-*TBD*
-
----
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
+## Acknowledgments
 
-## Development Notes
-
-- Ensure modular and clean code architecture.
-- Maintain cross-platform consistency.
-- Avoid external dependencies unless absolutely necessary.
-- Provide comprehensive documentation and logging.
-- Adhere to standard Go formatting practices (`gofmt`).
-
----
-
-## Contribution Guidelines
-
-1. Write modular and maintainable code.
-2. Ensure cross-platform compatibility.
-3. Minimize external dependencies.
-4. Maintain clear documentation and logging practices.
-5. Follow Go's standard formatting guidelines.
-
----
-
-## Future Vision
-
-Cpp2Py aims to be the definitive tool for bridging C++ and Python, allowing developers to integrate native code effortlessly, with bindings that feel as natural as writing pure Python.
-
----
-
-**Would you like assistance in setting up the initial repository structure or any specific component of the project?**
+- Inspired by pybind11 and cppyy
+- Built with Go and Python
+- Uses ctypes for Python bindings
 

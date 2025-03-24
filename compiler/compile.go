@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 // CompileOptions contains options for the compilation process
@@ -47,7 +48,30 @@ func CompileWithOptions(sourceFile, outputDir string, compiler *CompilerInfo, op
 	// Build compilation command based on compiler type
 	args := buildCompileCommand(sourceFile, outputPath, compiler, opts)
 
-	// Execute compilation
+	// If compiler requires environment setup, create and run a setup script
+	if compiler.EnvSetup != nil {
+		// Create a batch file to set up the environment and run the compilation
+		batchFile := filepath.Join(outputDir, "compile.bat")
+		batchContent := fmt.Sprintf(`@echo off
+call "%s" %s
+"%s" %s
+`, compiler.EnvSetup.SetupScript, strings.Join(compiler.EnvSetup.SetupArgs, " "),
+			compiler.Path, strings.Join(args, " "))
+		if err := os.WriteFile(batchFile, []byte(batchContent), 0644); err != nil {
+			return "", fmt.Errorf("failed to create batch file: %v", err)
+		}
+
+		// Run the batch file
+		cmd := exec.Command(compiler.EnvSetup.SetupCmd, batchFile)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return "", fmt.Errorf("compilation failed: %v", err)
+		}
+		return outputPath, nil
+	}
+
+	// For compilers that don't need environment setup, run directly
 	cmd := exec.Command(compiler.Path, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -122,25 +146,34 @@ func buildClangCommand(sourceFile, outputPath string, opts *CompileOptions) []st
 func buildMSVCCommand(sourceFile, outputPath string, opts *CompileOptions) []string {
 	args := []string{
 		"/LD", // Create DLL
-		"/O2", // Optimization level 2
+		"/MD", // Use multithreaded DLL runtime
 		"/Fe:" + outputPath,
 	}
 
-	// Add include paths from compiler info
-	for _, include := range opts.IncludePaths {
-		args = append(args, "/I\""+include+"\"")
+	// Map optimization levels
+	switch opts.OptimizationLevel {
+	case "-O0":
+		args = append(args, "/Od") // No optimization
+	case "-O1":
+		args = append(args, "/O1") // Minimize size
+	case "-O2":
+		args = append(args, "/O2") // Maximize speed
+	case "-O3":
+		args = append(args, "/O2") // MSVC doesn't have O3, use O2
 	}
 
 	if opts.Debug {
 		args = append(args, "/Zi")
 	}
 
+	// Add include paths
 	for _, include := range opts.IncludePaths {
 		args = append(args, "/I\""+include+"\"")
 	}
 
+	// Add library paths
 	for _, lib := range opts.LibraryPaths {
-		args = append(args, "/LIBPATH:"+lib)
+		args = append(args, "/LIBPATH:\""+lib+"\"")
 	}
 
 	args = append(args, sourceFile)

@@ -1,2 +1,11 @@
 bindings
 *.exe
+*.pdb
+*.o
+*.so
+*.dylib
+*.dll
+*.lib
+*.exp
+*.def
+*.manifest
