@@ -94,13 +94,14 @@ func detectUnixCompiler() (*CompilerInfo, error) {
 }
 
 func checkGCC() (*CompilerInfo, error) {
-	cmd := exec.Command("g++", "--version")
-	output, err := cmd.Output()
+	// Validate g++ path
+	path, err := exec.LookPath("g++")
 	if err != nil {
 		return nil, err
 	}
 
-	path, err := exec.LookPath("g++")
+	cmd := exec.Command(path, "--version")
+	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}
@@ -113,13 +114,14 @@ func checkGCC() (*CompilerInfo, error) {
 }
 
 func checkClang() (*CompilerInfo, error) {
-	cmd := exec.Command("clang++", "--version")
-	output, err := cmd.Output()
+	// Validate clang++ path
+	path, err := exec.LookPath("clang++")
 	if err != nil {
 		return nil, err
 	}
 
-	path, err := exec.LookPath("clang++")
+	cmd := exec.Command(path, "--version")
+	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}

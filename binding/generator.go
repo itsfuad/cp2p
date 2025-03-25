@@ -2,10 +2,10 @@ package binding
 
 import (
 	"fmt"
+	"html/template"
 	"os"
 	"path/filepath"
 	"runtime"
-	"text/template"
 
 	"cp2p/config"
 )
@@ -57,7 +57,7 @@ func (g *Generator) generate() error {
 }
 
 func (g *Generator) generateBindingCode(file *os.File) error {
-	// Define the template for the Python binding
+	// Define the template for the Python binding using html/template for security
 	tmpl := template.Must(template.New("binding").Parse(pythonBindingTemplate))
 
 	// Define type mappings
