@@ -1,12 +1,17 @@
 package compiler
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+)
+
+const (
+	ErrInvalidCompilerPath = "invalid compiler path: %s"
 )
 
 // CompilerType represents the type of C++ compiler
@@ -100,7 +105,13 @@ func checkGCC() (*CompilerInfo, error) {
 		return nil, err
 	}
 
-	cmd := exec.Command(path, "--version")
+	// Validate path is safe
+	if !filepath.IsAbs(path) || !strings.HasPrefix(path, "/") {
+		return nil, fmt.Errorf(ErrInvalidCompilerPath, path)
+	}
+
+	ctx := context.Background()
+	cmd := exec.CommandContext(ctx, path, "--version")
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -120,7 +131,13 @@ func checkClang() (*CompilerInfo, error) {
 		return nil, err
 	}
 
-	cmd := exec.Command(path, "--version")
+	// Validate path is safe
+	if !filepath.IsAbs(path) || !strings.HasPrefix(path, "/") {
+		return nil, fmt.Errorf(ErrInvalidCompilerPath, path)
+	}
+
+	ctx := context.Background()
+	cmd := exec.CommandContext(ctx, path, "--version")
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -161,6 +178,20 @@ func findSDKIncludePath() string {
 	return ""
 }
 
+func findVisualStudioPath(clPath string) string {
+	dir := filepath.Dir(clPath)
+	for {
+		if dir == "" || dir == "." || dir == "/" {
+			break
+		}
+		if strings.Contains(filepath.Base(dir), "Microsoft Visual Studio") {
+			return dir
+		}
+		dir = filepath.Dir(dir)
+	}
+	return ""
+}
+
 func checkMSVC() (*CompilerInfo, error) {
 	// First check if cl.exe is available
 	path, err := exec.LookPath("cl.exe")
@@ -168,26 +199,21 @@ func checkMSVC() (*CompilerInfo, error) {
 		return nil, err
 	}
 
+	// Validate path is safe
+	if !filepath.IsAbs(path) {
+		return nil, fmt.Errorf(ErrInvalidCompilerPath, path)
+	}
+
 	// Get the version info from cl.exe
-	cmd := exec.Command("cl.exe")
+	ctx := context.Background()
+	cmd := exec.CommandContext(ctx, path)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}
 
-	// Find Visual Studio path by looking for cl.exe's parent directory
-	vsPath := ""
-	dir := filepath.Dir(path)
-	for {
-		if dir == "" || dir == "." || dir == "/" {
-			break
-		}
-		if strings.Contains(filepath.Base(dir), "Microsoft Visual Studio") {
-			vsPath = dir
-			break
-		}
-		dir = filepath.Dir(dir)
-	}
+	// Find Visual Studio path
+	vsPath := findVisualStudioPath(path)
 
 	includePaths := []string{}
 	var envSetup *CompilerEnvSetup

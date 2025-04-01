@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -62,7 +63,13 @@ call "%s" %s
 		}
 
 		// Run the batch file
-		cmd := exec.Command(compiler.EnvSetup.SetupCmd, batchFile)
+		// Validate paths are safe
+		if !filepath.IsAbs(compiler.EnvSetup.SetupCmd) || !filepath.IsAbs(batchFile) {
+			return "", fmt.Errorf("invalid command or batch file path")
+		}
+
+		ctx := context.Background()
+		cmd := exec.CommandContext(ctx, compiler.EnvSetup.SetupCmd, batchFile)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
@@ -72,7 +79,13 @@ call "%s" %s
 	}
 
 	// For compilers that don't need environment setup, run directly
-	cmd := exec.Command(compiler.Path, args...)
+	// Validate compiler path is safe
+	if !filepath.IsAbs(compiler.Path) {
+		return "", fmt.Errorf("invalid compiler path: %s", compiler.Path)
+	}
+
+	ctx := context.Background()
+	cmd := exec.CommandContext(ctx, compiler.Path, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
