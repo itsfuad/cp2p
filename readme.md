@@ -1,56 +1,51 @@
-# Cp2P: Seamless C++ to Python Binding Generator
+# C++ to Python Bindings Generator
 
-Cp2P is a powerful CLI tool that automatically generates Python bindings for C++ code. It supports multiple compilers and platforms, making it easy to create Python interfaces for your C++ libraries.
+A tool to generate Python bindings for C++ code, supporting multiple compilers and platforms.
 
 ## Features
 
-- **Multi-Compiler Support**: Works with GCC, Clang, and MSVC
-- **Cross-Platform**: Supports Windows, Linux, and macOS
-- **Type-Safe**: Generates proper type hints and docstrings
-- **Easy to Use**: Simple command-line interface
-- **Configurable**: Supports JSON/YAML configuration files
-- **Modern Python**: Generates Python 3.7+ compatible code
+- Automatic compiler detection (GCC, Clang, MSVC)
+- Cross-platform support (Windows, Linux, macOS)
+- Generates Python bindings using pybind11
+- Handles C++ class and function bindings
+- Supports custom include paths and compiler flags
+- Configurable through JSON or C++ file annotations
+
+## How It Works
+
+1. **Compiler Detection**:
+   - Automatically detects available C++ compilers in the system PATH
+   - Supports GCC, Clang, and MSVC (Windows only)
+   - Verifies compiler version and capabilities
+
+2. **C++ Code Analysis**:
+   - Parses C++ source files to identify classes and functions
+   - Supports both automatic detection and manual configuration
+   - Handles inheritance and virtual functions
+
+3. **Binding Generation**:
+   - Creates pybind11-based Python bindings
+   - Generates proper type conversions
+   - Handles memory management and object lifetimes
+   - Supports both static and dynamic library generation
+
+4. **Build Process**:
+   - Compiles C++ code into a shared library
+   - Links against Python and pybind11
+   - Handles platform-specific build requirements
 
 ## Installation
 
-### From Source
-
 ```bash
-git clone https://github.com/itsfuad/Cp2P.git
-cd Cp2P
-go build
-```
+# Clone the repository
+git clone https://github.com/yourusername/cp2p.git
+cd cp2p
 
-### Using Go
+# Install dependencies
+go mod download
 
-```bash
-go install github.com/itsfuad/Cp2P@latest
-```
-
-## Quick Start
-
-1. Create a C++ source file (`example.cpp`):
-
-```cpp
-extern "C" {
-    int add(int a, int b) {
-        return a + b;
-    }
-}
-```
-
-2. Generate Python bindings:
-
-```bash
-Cp2P --input example.cpp --output ./bindings
-```
-
-3. Use in Python:
-
-```python
-from bindings.example import add
-
-result = add(5, 3)  # Returns 8
+# Build the tool
+go build -o cp2p
 ```
 
 ## Usage
@@ -58,99 +53,105 @@ result = add(5, 3)  # Returns 8
 ### Basic Usage
 
 ```bash
-Cp2P --input <source_file> --output <output_dir> [options]
+# Generate bindings from a C++ file
+cp2p --input example.cpp --output ./bindings
+
+# Use a specific compiler
+cp2p --input example.cpp --output ./bindings --compiler gcc
+
+# Use a configuration file
+cp2p --input example.cpp --output ./bindings --config config.json
 ```
 
-### Options
+### Command Line Arguments
 
-- `--input`: Path to C++ source file (required)
-- `--output`: Output directory (default: ./bindings)
+- `--input`: Path to the C++ source file or project entry point
+- `--output`: Output directory for generated bindings (default: ./bindings)
 - `--compiler`: Compiler choice (gcc, clang, msvc, auto)
-- `--config`: JSON/YAML config file for custom bindings
+- `--config`: Optional JSON config file (if not provided, will parse C++ file)
 
 ### Configuration File Example
 
 ```json
 {
-    "functions": [
-        {
-            "name": "add",
-            "return_type": "int",
-            "parameters": [
-                {"name": "a", "type": "int"},
-                {"name": "b", "type": "int"}
-            ],
-            "docstring": "Adds two integers"
-        }
-    ]
+  "classes": [
+    {
+      "name": "MyClass",
+      "methods": ["method1", "method2"],
+      "constructors": ["default", "withParams"]
+    }
+  ],
+  "functions": ["globalFunc1", "globalFunc2"],
+  "include_paths": ["/path/to/includes"],
+  "compiler_flags": ["-std=c++17", "-O2"]
 }
 ```
 
+### C++ Code Example
+
+```cpp
+// example.cpp
+#include <string>
+
+class MyClass {
+public:
+    MyClass() {}
+    std::string getMessage() { return "Hello from C++!"; }
+};
+
+// Bindings will be automatically generated for this class
+```
+
+### Using Generated Bindings
+
+```python
+# Python code using the generated bindings
+from bindings import MyClass
+
+obj = MyClass()
+print(obj.getMessage())  # Output: Hello from C++!
+```
+
+## Compiler Detection
+
+The tool automatically detects available compilers in the following order:
+
+### Windows
+1. MSVC (cl.exe)
+2. GCC/MinGW (g++)
+3. Clang (clang++)
+
+### Linux/macOS
+1. Clang (clang++)
+2. GCC (g++)
+
 ## Development
 
-### Prerequisites
-
-- Go 1.21 or later
-- C++ compiler (GCC, Clang, or MSVC)
-- Python 3.7 or later
-
-### Building
+### Running Tests
 
 ```bash
-# Clone the repository
-git clone https://github.com/itsfuad/Cp2P.git
-cd Cp2P
-
-# Install dependencies
-go mod download
-
-# Build
-go build
-
-# Run tests
+# Run all tests
 go test ./...
 
-# Run linter
-golangci-lint run
+# Run specific test
+go test ./compiler -run TestCompilerDetection
 ```
 
-### Project Structure
+### Adding New Compiler Support
 
-```
-Cp2P/
-├── cmd/
-│   └── Cp2P.go           # CLI entry point
-├── compiler/
-│   ├── detect.go          # Compiler detection
-│   └── compile.go         # Compilation logic
-├── binding/
-│   └── generator.go       # Python binding generator
-├── config/
-│   └── parser.go          # Config file parser
-├── util/
-│   ├── os_utils.go        # OS utilities
-│   └── logger.go          # Logging
-├── tests/                 # Test files
-├── .github/              # GitHub Actions
-├── README.md
-├── go.mod
-└── LICENSE
-```
+1. Add new compiler type to `CompilerType` enum
+2. Implement detection logic in `detect.go`
+3. Add compiler-specific flags and options
+4. Update tests in `detect_test.go`
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
 ## License
 
-This project is licensed under the Mozilla Public License Version 2.0
-
-## Acknowledgments
-
-- Inspired by pybind11 and cppyy
-- Built with Go and Python
-- Uses ctypes for Python bindings
+MIT License - see LICENSE file for details
