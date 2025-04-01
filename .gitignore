@@ -8,4 +8,5 @@ bindings
 *.lib
 *.exp
 *.def
+*.obj
 *.manifest
